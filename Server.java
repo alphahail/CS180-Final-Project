@@ -2,8 +2,15 @@ import java.io.*;
 import java.net.*;
 
 public class Server {
-    public static void main (String[] args) throws UnknownHostException, IOException{
-        ServerSocket serverSocket = new ServerSocket(4242);
-        
+    static final int PORT = 6174; //Kaprekar's routine final number
+
+    public static void main (String[] args) throws IOException{
+        ServerSocket serverSocket = new ServerSocket(PORT);
+
+        while (true) {
+            Socket socket = serverSocket.accept();
+
+            new ClientThread(socket).start();
+        }
     }
 }
