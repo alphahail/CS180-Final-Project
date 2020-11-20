@@ -4,5 +4,6 @@ public class InvalidUserAccountException extends Exception {
     }
 
     public InvalidUserAccountException() {
+        super();
     }
 }
