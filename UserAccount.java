@@ -22,4 +22,12 @@ public class UserAccount {
     public void setPassword(String password) {
         this.password = password;
     }
+    
+    @Override
+    public String toString() {
+        return "UserAccount{" +
+                "userName='" + userName + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }
