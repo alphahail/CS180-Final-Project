@@ -20,7 +20,7 @@ public class ClientThread extends Thread{
         this.socket = socket;
     }
     
-    public void chat(ArrayList<String> chats) throws FileNotFoundException {
+    public void chat(ArrayList<String> chats) {
 
         JFrame chatter = new JFrame("Conversation");
         Container content = chatter.getContentPane();
