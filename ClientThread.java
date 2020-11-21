@@ -243,6 +243,7 @@ public class WelcomeScreen extends JFrame  {
 
         }
     };
+    /**
     public Messange sendNewMessage (String signature, String message) {
 
         Messange messageToSend = new Messange(signature, message);
@@ -250,7 +251,7 @@ public class WelcomeScreen extends JFrame  {
         //need logic to communicate with the server
         return messageToSend;
     }
-
+    **/
 
     public static UserAccount createAccount(String userName, String password) {
         UserAccount createdUser = new UserAccount(userName, password);
