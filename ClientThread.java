@@ -11,11 +11,6 @@ import java.util.ArrayList;
 
 public class ClientThread extends Thread{
     private Socket socket;
-    private JButton delete;
-    private JButton back;
-    private JTextField deleteMessage;
-    private JButton send;
-    private JTextField message;
 
     public ClientThread(Socket socket) {
         this.socket = socket;
@@ -35,14 +30,13 @@ public class ClientThread extends Thread{
         BufferedReader br = new BufferedReader(fos);
 
         String user = br.readLine();
-        String tempPass = br.readLine();
-        while(user != null && tempPass != null) {
-            if (user.equals(userName) && tempPass.equals(password)) {
+        while(user != null) {
+            String[] userInfo = user.split(" - ");
+            if (userInfo[0].equals(userName) && userInfo[1].equals(password)) {
                 return "Valid User";
             }
 
             user = br.readLine();
-            password = br.readLine();
         }
         return "Invalid User";
     }

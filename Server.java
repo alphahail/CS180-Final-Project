@@ -2,8 +2,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-
-
 public class Server {
     static final int PORT = 6174; //Kaprekar's routine final number
     // When relaunching server we should open up the files to get the usernames that are active rn, with an arraylist that encompases it.    	
@@ -146,7 +144,6 @@ public class Server {
         	}
         } catch (IOException e) {
         	System.out.println("Convo File doesn't currently Exist");
-        	// Change above to joption later
         }
         return messages;
     }
