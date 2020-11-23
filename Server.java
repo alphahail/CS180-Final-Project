@@ -19,6 +19,7 @@ public class Server {
             new ClientThread(socket).start();
         }
     }
+
     // Reads the file for account info
     public ArrayList<UserAccount> readNameFile(String fileName) {
 		File f = new File(fileName);
@@ -43,6 +44,7 @@ public class Server {
         }
         return accounts;
     }
+
     public boolean signIn(String username, String password) {
     	File f = new File(username);
     	if (!f.exists()) {
