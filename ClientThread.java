@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -20,19 +21,45 @@ public class ClientThread extends Thread{
     public void run() {
         /*Here will go the implementation for
         * Each Client  */
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
-            String command = reader.readLine();
-            while(command != null) {
+        //try catch statement for the input and output streams and connection
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             PrintWriter writer = new PrintWriter(socket.getOutputStream())) {
+
+            String command = "";
+            while (true) {
                 /*Inside this for loop it will essentially listen to
-                * commands from the client than send out any thing that is needed*/
-
+                 * commands from the client than send out any thing that is needed*/
                 command = reader.readLine();
+
+                //if nothing is read than we restart the loop and check again
+                if (command == null) {
+                    continue;
+                }
+                String[] arguements = command.split(" - ");
+
+                //Login - Username - Password
+                if (arguements[0].equals("Login")) {
+                    //Checking to see if its a valid login
+                    String stringToClient = isValidLogin(arguements[1], arguements[2]);
+
+                    //sending to client
+                    writer.write(stringToClient);
+                    writer.println();
+                    writer.flush(); // Ensure data is sent to the client.
+                    System.out.println("Client was sent data: " + stringToClient);
+                }
+
+                //SignUp - Username - Password
+                else if (arguements[0].equals("SignUp")) {
+                    addUser(arguements[1], arguements[2]);
+                    System.out.println("arguements[1] was added to users.txt");
+                }
             }
+
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Connection error closing thread");
+            return;
         }
     }
 
@@ -58,8 +85,7 @@ public class ClientThread extends Thread{
         FileOutputStream fos = new FileOutputStream(f, true);
         PrintWriter pw = new PrintWriter(fos);
 
-        pw.println(userName);
-        pw.println(password);
+        pw.println(userName + " - " + password);
     }
 
     // Reads the file for account info
@@ -85,38 +111,6 @@ public class ClientThread extends Thread{
             System.out.println("Main File doesn't currently Exist");
         }
         return accounts;
-    }
-
-    public boolean signIn(String username, String password) {
-        File f = new File(username);
-        if (!f.exists()) {
-            return false;
-        }
-        try (BufferedReader bfr2 = new BufferedReader(new FileReader(f))) {
-            String line2 = bfr2.readLine();
-            while (line2 != null) {
-                String[] accountInfo = line2.split(" - ");
-                if (username.equals(accountInfo[0]) && password.equals(accountInfo[1])) {
-                    return true;
-                }
-                line2 = bfr2.readLine();
-            }
-            return false;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-    public void addAccount(String username, String password) {
-        File f = new File(userFile);
-        String string = username + " - " + password;
-        File f2 = new File(username);
-        try {
-            f2.createNewFile();
-        } catch (IOException e) {
-            return;
-        }
-        writeToFile(userFile, string);
     }
 
     //assuming we already asked the user if they are sure on the client side
