@@ -41,11 +41,19 @@ public class Client extends JFrame {
     static JLabel signUpTopPanelLabel;
     static JButton backButton;
     static JButton confirmSignUp;
+    //chat board
+    static JFrame chat;
+    static JPanel jp;
+    static JScrollPane sp;
+    static Container cont;
+    static JPanel up;
+    static ArrayList<Conversation> con = new ArrayList<>();
     //message board
     private static JButton delete;
     private static JButton back;
     private static JTextField deleteMessage;
     private static JButton send;
+    private static JButton create;
 
     private static JTextField composeMessage;
     public static Socket socket;
@@ -169,6 +177,28 @@ public class Client extends JFrame {
                 signUpFrame.add(signUpMyBottomPanel, BorderLayout.SOUTH);
                 signUpFrame.add(signUpMyTopPanel, BorderLayout.NORTH);
                 signUpFrame.setVisible(false);
+                //conversation board
+
+                chat = new JFrame("Conversations");
+                cont = chat.getContentPane();
+                cont.setLayout(new BorderLayout());
+                chat.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                jp = new JPanel();
+                jp.setPreferredSize(new Dimension(500,400));
+                sp = new JScrollPane(jp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                sp.setPreferredSize(new Dimension(500, 400));
+                up = new JPanel();
+                create = new JButton("Create Conversation");
+                create.addActionListener(actionListener);
+                for (int i = 0; i < con.size(); i++) {
+                    jp.add(con.get(i).getButton());
+                }
+                top.add(create);
+                content.add(up, BorderLayout.NORTH);
+                content.add(sp, BorderLayout.CENTER);
+                chat.setSize(500,500);
+                chat.setResizable(false);
+                chat.setVisible(false);
 
                 //messenger board
                 chatter = new JFrame("Conversation");
@@ -257,6 +287,9 @@ public class Client extends JFrame {
             if (e.getSource() == back) {
                 //add logic to hide panel
             }
+            if (e.getSource() == create) {
+                createCo();
+            }
         }
     };
 
@@ -292,7 +325,8 @@ public class Client extends JFrame {
             String response = reader.readLine();
             if (response.equals("Valid User")) {
                 myFrame.setVisible(false);
-                chatter.setVisible(true);
+                chat.setVisible(true);
+                chatter.setVisible(false);
             } else {
                 JOptionPane.showMessageDialog(null, "Your username or password was incorrect.",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -302,6 +336,46 @@ public class Client extends JFrame {
             JOptionPane.showMessageDialog(null, "Bad connection",
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public static void createCo() {
+        int finish = 1;
+        ArrayList<String> names = new ArrayList<>();
+        String name;
+        String title;
+        do {
+            name = JOptionPane.showInputDialog(null, "Enter the UserAccount", "Create Conversation",
+                    JOptionPane.QUESTION_MESSAGE);
+            if (check(name)) {
+                names.add(name);
+            } else {
+                JOptionPane.showMessageDialog(null, "Invalid User", "Create Conversation", JOptionPane.ERROR_MESSAGE);
+            }
+            finish = JOptionPane.showConfirmDialog(null, "Would you like add another user?", "Create Conversation", JOptionPane.YES_NO_OPTION);
+        } while (finish == JOptionPane.YES_OPTION);
+
+        title = JOptionPane.showInputDialog(null, "Enter the Title", "Create Conversation",
+                JOptionPane.QUESTION_MESSAGE);
+
+        Conversation n = new Conversation(names, title);
+        con.add(n);
+    }
+
+    public static boolean check(String name) { //this will check if the user exists
+        boolean checker = false;
+        try {
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+            writer.write(name);
+            writer.flush();
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String response = reader.readLine();
+            if (response.equals(name)) {
+                checker = true;
+            }
+        } catch (IOException ie) {
+            ie.printStackTrace();
+        }
+        return checker;
     }
 
     public static void serverClient() throws UnknownHostException, IOException {
@@ -325,4 +399,3 @@ public class Client extends JFrame {
     }
 
 }
-
