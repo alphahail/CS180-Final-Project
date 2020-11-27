@@ -11,6 +11,7 @@ public class ClientThread extends Thread{
     ArrayList<String> passwords = new ArrayList<String>();
     ArrayList<UserAccount> accounts = new ArrayList<UserAccount>();
     public final String userFile = "users.txt";
+    public final String conversationsFile = "conversations.txt";
 
     public ClientThread(Socket socket) {
         this.socket = socket;
@@ -53,13 +54,90 @@ public class ClientThread extends Thread{
                 //SignUp - Username - Password
                 else if (arguements[0].equals("SignUp")) {
                     addUser(arguements[1], arguements[2]);
-                    System.out.println("arguements[1] was added to users.txt");
+                    System.out.println(arguements[1] + " was added to users.txt");
+
+                    writer.write("Signup Successful");
+                    writer.println();
+                    writer.flush(); // Ensure data is sent to the client.
+                }
+
+                //DeleteUser - username
+                else if (arguements[0].equals("DeleteUser")) {
+                    File f = new File(userFile);
+                    FileReader fr = new FileReader(f);
+                    BufferedReader br = new BufferedReader(fr);
+
+                    FileOutputStream fos = new FileOutputStream(f);
+                    PrintWriter pw = new PrintWriter(fos);
+
+                    /*Finding all the usernames besides the one we want deleted and adding
+                    * it to a varibale*/
+                    String line = br.readLine();
+                    String withoutUser = "";
+                    while(line != null) {
+                        String[] parts = line.split(" - ");
+                        if(!parts[0].equals(arguements[1])) {
+                            withoutUser += line + "/n";
+                        } else {
+                            break;
+                        }
+                        line = br.readLine();
+                    }
+
+                    /*Now we take that variable and just write it back to the file
+                    * because we are not in append mode in our fos we just overwrite the
+                    * whole file */
+                    pw.print(withoutUser);
+                }
+
+                //startConversation - user - user - user - ...
+                else if (arguements[0].equals("startConversation")) {
+                    String fileName = "";
+                    for(int i = 1; i < arguements.length; i++) {
+                        if (i != arguements.length -1) {
+                            fileName += arguements[i] + " - ";
+                        }
+                        fileName += arguements[i];
+                    }
+                    fileName += ".txt";
+
+                    File f = new File(fileName);
+                    f.createNewFile();
+
+                    //adding the new file to the list of conversations
+                    File f2 = new File(conversationsFile);
+                    FileOutputStream fos = new FileOutputStream(f2, true);
+                    PrintWriter pw = new PrintWriter(fos);
+
+                    String[] conversationName = fileName.split("\\.");
+                    pw.println(conversationName[0]);
+
+                    fos.close();
+                    pw.close();
+                }
+
+                //updateConversation - message - userWhoSent - user - user - user - ..."
+                else if (arguements[0].equals("updateConversation")) {
+                    String fileName = "";
+                    for(int i = 1; i < arguements.length; i++) {
+                        if (i != arguements.length -1) {
+                            fileName += arguements[i] + " - ";
+                        }
+                        fileName += arguements[i];
+                    }
+                    fileName += ".txt";
+
+                    File f = new File(fileName);
+                    FileOutputStream fos = new FileOutputStream(f, true);
+                    PrintWriter pw = new PrintWriter(fos);
+
+                    //User who sent - message - deleted by user - ...
+                    pw.println(arguements[2] + " - " + arguements[1]);
                 }
             }
 
         } catch (IOException e) {
             System.out.println("Connection error closing thread");
-            return;
         }
     }
 
@@ -124,7 +202,7 @@ public class ClientThread extends Thread{
                 pw.println(usernames.get(x) + " - " + passwords.get(x));
             }
         } catch (IOException e) {
-
+            System.out.println("Server had an error deleting the user");
         }
     }
 
