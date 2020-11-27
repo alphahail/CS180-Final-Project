@@ -4,7 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.text.Style;
 import java.awt.BorderLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.net.UnknownHostException;
@@ -14,7 +17,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 
-public class Client extends JFrame  {
+public class Client extends JFrame {
     //connect to server
     static String hostname = "localhost";
     static int portNumber = 6174;
@@ -43,7 +46,8 @@ public class Client extends JFrame  {
     private static JButton back;
     private static JTextField deleteMessage;
     private static JButton send;
-    private static JTextField message;
+
+    private static JTextField composeMessage;
     public static Socket socket;
     static ArrayList<String> chats = new ArrayList<>();
     static BufferedReader reader;
@@ -56,7 +60,7 @@ public class Client extends JFrame  {
     static JPanel bottom;
 
 
-    public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException{
+    public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -81,10 +85,23 @@ public class Client extends JFrame  {
                 password = new JTextField("Password");
                 password.setFont(new Font(null, 0, 15));
                 password.setMaximumSize(new Dimension(300, 40));
+                password.addMouseListener(new MouseAdapter() {
+                    public void mouseClicked(MouseEvent e) {
+                        if (password.getText().equals("Password")) {
+                            password.setText(null);
+                        }
+                    }
+                });
 
-                userName = new JTextField("UserName");
+                userName = new JTextField("Username");
                 userName.setFont(new Font(null, 0, 15));
                 userName.setMaximumSize(new Dimension(300, 40));
+                userName.addMouseListener(new MouseAdapter() {
+                    public void mouseClicked(MouseEvent e) {
+                        if (userName.getText().equals("Username"))
+                            userName.setText(null);
+                    }
+                });
 
                 titleLabel = new JLabel("Please enter your information:");
                 titleLabel.setFont(new Font(null, 0, 25));
@@ -127,12 +144,12 @@ public class Client extends JFrame  {
                 signUpTopPanelLabel.setFont(new Font(null, 0, 15));
 
                 signUpUsername = new JTextField("Username:");
-                signUpUsername.setFont(new Font(null,0,15));
+                signUpUsername.setFont(new Font(null, 0, 15));
                 signUpMyMiddlePanel.add(signUpUsername);
                 signUpUsername.setMaximumSize(new Dimension(300, 40));
 
                 signUpPassword = new JTextField("Password:");
-                signUpPassword.setFont(new Font(null,0,15));
+                signUpPassword.setFont(new Font(null, 0, 15));
                 signUpMyMiddlePanel.add(signUpPassword);
                 signUpPassword.setMaximumSize(new Dimension(300, 40));
 
@@ -155,6 +172,7 @@ public class Client extends JFrame  {
 
                 //messenger board
                 chatter = new JFrame("Conversation");
+                composeMessage = new JTextField(20);
                 chatter.setSize(500, 500);
                 chatter.setResizable(false);
                 content = chatter.getContentPane();
@@ -163,11 +181,21 @@ public class Client extends JFrame  {
                 textArea = new JTextArea(10, 20);
                 top = new JPanel();
                 bottom = new JPanel();
-                back = new JButton("Return");
+                back = new JButton("Back");
+                back.addActionListener(actionListener);
                 delete = new JButton("Delete");
                 deleteMessage = new JTextField("What message would you like to delete?...");
+                deleteMessage = new JTextField("What message would you like to delete?...");
+                deleteMessage.addMouseListener(new MouseAdapter() {
+                    public void mouseClicked(MouseEvent e) {
+                        if (deleteMessage.getText().equals("What message would you like to delete?...")) {
+                            deleteMessage.setText("");
+                        }
+                    }
+                });
+
                 send = new JButton("Send");
-                message = new JTextField("...", 40);
+                send.addActionListener(actionListener);
 
                 JScrollPane scroll = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
                 for (int i = 0; i < chats.size(); i++) {
@@ -181,7 +209,8 @@ public class Client extends JFrame  {
                 top.add(delete);
                 top.add(deleteMessage);
                 bottom.add(send);
-                bottom.add(message);
+                bottom.add(composeMessage);
+
                 content.add(bottom, BorderLayout.SOUTH);
                 content.add(top, BorderLayout.NORTH);
                 content.add(scroll, BorderLayout.CENTER);
@@ -197,6 +226,9 @@ public class Client extends JFrame  {
         } catch (UnknownHostException un) {
             JOptionPane.showMessageDialog(null,
                     "A connection with the server couldn't be established.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException io) {
+            JOptionPane.showMessageDialog(null,
+                    "A connection with the server couldn't be established.", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -206,7 +238,7 @@ public class Client extends JFrame  {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == signIn) {
-                getValidAccount(userName.getText(),password.getText());
+                getValidAccount(userName.getText(), password.getText());
             }
             if (e.getSource() == signUp) {
                 myFrame.setVisible(false);
@@ -219,9 +251,15 @@ public class Client extends JFrame  {
             if (e.getSource() == confirmSignUp) {
                 createAccount(signUpUsername.getText(), signUpPassword.getText());
             }
-
+            if (e.getSource() == send) {
+                sendNewMessage(composeMessage.getText());
+            }
+            if (e.getSource() == back) {
+                //add logic to hide panel
+            }
         }
     };
+
     public static void createAccount(String userName, String password) {
         try {
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
@@ -234,15 +272,16 @@ public class Client extends JFrame  {
                 JOptionPane.showMessageDialog(null, "Your account has " +
                         "been created, return to the login screen.");
             } else {
-                JOptionPane.showMessageDialog(null,"The user name you created was taken," +
-                                "please try another one.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "The user name you created was taken," +
+                        "please try another one.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (IOException ie) {
             ie.printStackTrace();
         }
     }
+
     public static void getValidAccount(String userName, String password) {
-        boolean status = false;
+
         try {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             pw = new PrintWriter(socket.getOutputStream());
@@ -255,17 +294,35 @@ public class Client extends JFrame  {
                 myFrame.setVisible(false);
                 chatter.setVisible(true);
             } else {
-                JOptionPane.showMessageDialog(null,"Your username or password was incorrect.",
+                JOptionPane.showMessageDialog(null, "Your username or password was incorrect.",
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (IOException io) {
-            JOptionPane.showMessageDialog(null,"Bad connection",
+            JOptionPane.showMessageDialog(null, "Bad connection",
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     public static void serverClient() throws UnknownHostException, IOException {
         socket = new Socket(hostname, portNumber);
     }
+
+    public static void sendNewMessage(String message) {
+
+        if (message.equals("")) {
+            JOptionPane.showMessageDialog(null, "Your message is empty, add a value first to send."
+                    , "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else {
+            String[] messageWordLimitTest = message.split(" ");
+            if (messageWordLimitTest.length > 100) {
+                JOptionPane.showMessageDialog(null, "Your message is " + (messageWordLimitTest.length - 100) + "word(s) too long."
+                        + "Please shorten it.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        // else send message to server
+    }
+
 }
 
