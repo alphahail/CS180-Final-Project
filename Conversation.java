@@ -8,17 +8,13 @@ import java.util.ArrayList;
  * pressed.
  */
 public class Conversation {
-    private ArrayList<UserAccount> users;
+    private ArrayList<String> users;
     private JButton convo;
     private String title;
 
 
-    public Conversation(ArrayList<UserAccount> users, String title) {
-        if (users.size() == 1) {
-            this.title = users.get(0).getUserName();
-        } else {
-            this.title = title;
-        }
+    public Conversation(ArrayList<String> users, String title) {
+        this.title = title;
         convo = new JButton(title);
         convo.addActionListener(new ActionListener() {
             @Override
@@ -33,11 +29,11 @@ public class Conversation {
         //this happens whenever the button is pressed
     }
 
-    public ArrayList<UserAccount> getUsers() {
+    public ArrayList<String> getUsers() {
         return users;
     }
 
-    public void setUsers(ArrayList<UserAccount> users) {
+    public void setUsers(ArrayList<String> users) {
         this.users = users;
     }
 
