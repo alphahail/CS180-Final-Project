@@ -359,6 +359,7 @@ public class Client extends JFrame {
 
         Conversation n = new Conversation(names, title);
         con.add(n);
+        jp.add(n.getButton());
     }
 
     public static boolean check(String name) { //this will check if the user exists
